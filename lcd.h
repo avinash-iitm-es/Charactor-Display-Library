@@ -3,16 +3,10 @@
  *
  * Created: 10/9/2017 2:28:23 AM
  * Author: AVINASH SHARMA
- 
- * Recreated: 09-03-2019 
- * 
- *
  */ 
 
-// #define F_CPU 8000000UL
 #include <avr/io.h>
 #include <util/delay.h>
-
 
 #define LCD_PRT PORTD
 #define LCD_DDR DDRD	
@@ -22,6 +16,11 @@
 #define LCD_EN 2
 #define LCD_D7 7
 
+#define DELAY 200
+#define Upper_Nibble 0xF0
+#define Lower_Nibble 0x0F
+#define Data_pin 4
+
 #define SET_E() (LCD_PRT |= (1 << LCD_EN))
 #define SET_RS() (LCD_PRT |= (1 << LCD_RS))
 #define SET_RW() (LCD_PRT |= (1 << LCD_RW))
@@ -30,13 +29,11 @@
 #define CLEAR_RS() (LCD_PRT &=~ (1 << LCD_RS))
 #define CLEAR_RW() (LCD_PRT &=~ (1 << LCD_RW))
 
-#define DELAY 200
-
 void lcd_busy()
 {
 	uint8_t busy,status=0x00,temp;
 	
-	LCD_DDR&=(~(0xF0));
+	LCD_DDR&=(~(Upper_Nibble));
 	
 	SET_RW();		//Read mode
 	CLEAR_RS();		//Read status
@@ -86,7 +83,7 @@ void lcdCommand(unsigned char cmnd)
 	_delay_us(1);
 	
 	SET_E();
-	LCD_PRT = (LCD_PRT & 0x0F) | (cmnd & 0xF0);
+	LCD_PRT = (LCD_PRT & Lower_Nibble) | (cmnd & Upper_Nibble);
 	_delay_us(1);
 	
 	CLEAR_E();
@@ -94,7 +91,7 @@ void lcdCommand(unsigned char cmnd)
 	_delay_us(1);
 	
 	SET_E();
-	LCD_PRT = (LCD_PRT & 0x0F) | ((cmnd << 4) & 0xF0);
+	LCD_PRT = (LCD_PRT & Lower_Nibble) | ((cmnd << Data_pin) & Upper_Nibble);
 	_delay_us(1);
 	
 	CLEAR_E();
@@ -110,7 +107,7 @@ void lcdData(unsigned char data) {
 	_delay_us(1);
 	
 	SET_E();
-	LCD_PRT = (LCD_PRT & 0x0F) | (data & 0xF0);
+	LCD_PRT = (LCD_PRT & Lower_Nibble) | (data & Upper_Nibble);
 	_delay_us(1);
 	
 	CLEAR_E();
@@ -118,7 +115,7 @@ void lcdData(unsigned char data) {
 	_delay_us(1);
 
 	SET_E();
-	LCD_PRT = (LCD_PRT & 0x0F) | ((data << 4) & 0xF0);
+	LCD_PRT = (LCD_PRT & Lower_Nibble) | ((data << Data_pin) & Upper_Nibble);
 	_delay_us(1);
 	
 	CLEAR_E();
@@ -217,7 +214,7 @@ uint8_t lcd_read_byte()
 	uint8_t data,data_h,data_l;
 
 	// Set the LCD data pins as inputs
-	LCD_DDR&=(~(0xF0));
+	LCD_DDR&=(~(Upper_Nibble));
 
 	SET_RW();		//Read mode
 	SET_RS();		//Read status
@@ -239,8 +236,8 @@ uint8_t lcd_read_byte()
 	SET_E();
 	_delay_us(0.5);
 
-	data_l=(LCD_PIN>>4);
-	data_l&=0x0F;
+	data_l=(LCD_PIN>>Data_pin);
+	data_l&=Lower_Nibble;
 
 	data=data_h|data_l;
 
