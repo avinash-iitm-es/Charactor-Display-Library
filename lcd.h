@@ -2,15 +2,11 @@
  * AVR ATmega32A Characteristic LCD library 
  *
  * Created: 10/9/2017 2:28:23 AM
- * Author: AVINASH
+ * Author: AVINASH SHARMA
  
  * Recreated: 09-03-2019 
  * 
  *
- * Author: AVINASH
- * AK Mechatronics 
- * akmechatronicssytems@gmail.com
- * avinash62096@gmail.com
  */ 
 
 // #define F_CPU 8000000UL
@@ -35,13 +31,11 @@
 #define CLEAR_RW() (LCD_PRT &=~ (1 << LCD_RW))
 
 #define DELAY 200
-// #define DELAY-2
 
 void lcd_busy()
 {
 	uint8_t busy,status=0x00,temp;
 	
-	// 	LCD_DDR&=(~(0XF0));
 	LCD_DDR&=(~(0xF0));
 	
 	SET_RW();		//Read mode
@@ -200,17 +194,6 @@ void lcd_print(char *str)
 
 void lcd_print_num(unsigned val, unsigned length)
 {
-	
-/***************************************************************
-	This function writes a integer type value to LCD module
-
-	Arguments:
-	1)int val	: Value to print
-
-	2)unsigned int field_length :total length of field in which the value is printed
-	must be between 1-5 if it is -1 the field length is no of digits in the val
-
-	****************************************************************/
 	char str[3]={0,0,0};
 	int i=2,j=0;
 	
@@ -274,165 +257,4 @@ uint8_t lcd_read_byte()
 	return data;
 }
 
-/*
-
-  void lcdCommand(unsigned char cmnd) {
-	  // Send higher nibble of command
-	  //while(lcd_busy());
-	  
-	  LCD_PRT = (LCD_PRT & 0x0F) | (cmnd & 0xF0);
-	  
-	  // 	LCD_PRT &=~ (1 << LCD_RS);  // RS low for command mode
-	  CLEAR_RS();
-	  // 	LCD_PRT &=~ (1 << LCD_RW);  // RW low for write mode
-	  CLEAR_RW();
-	  // 	LCD_PRT |= (1 << LCD_EN);   // Enable LCD
-	  SET_E();
-	  _delay_us(5);               // Minimum delay of 450ns
-	  // 	LCD_PRT &=~ (1 << LCD_EN);  // Disable LCD
-	  CLEAR_E();
-	  _delay_us(DELAY);             // Delay for command execution 100uS
-
-	  // Send lower nibble of command
-	  LCD_PRT = (LCD_PRT & 0x0F) | ((cmnd << 4) & 0xF0);
-	  
-	  // 	LCD_PRT |= (1 << LCD_EN);   // Enable LCD
-	  SET_E();
-	  _delay_us(5);               // Minimum delay of 450ns
-	  // 	LCD_PRT &=~ (1 << LCD_EN);  // Disable LCD
-	  CLEAR_E();
-	  _delay_us(DELAY);             // Delay for command execution
-  }
-
-  void lcdData(unsigned char data) {
-	  // Send higher nibble of data
-	  //while(lcd_busy());
-	  
-	  LCD_PRT = (LCD_PRT & 0x0F) | (data & 0xF0);
-	  
-	  // 	LCD_PRT |= (1 << LCD_RS);   // RS high for data mode
-	  SET_RS();
-	  // 	LCD_PRT &=~ (1 << LCD_RW);  // RW low for write mode
-	  CLEAR_RW();
-	  // 	LCD_PRT |= (1 << LCD_EN);   // Enable LCD
-	  SET_E();
-	  _delay_us(5);               // Minimum delay of 450ns
-	  // 	LCD_PRT &=~ (1 << LCD_EN);  // Disable LCD
-	  CLEAR_E();
-	  _delay_us(DELAY);             // Delay for data write
-
-	  // Send lower nibble of data
-	  LCD_PRT = (LCD_PRT & 0x0F) | ((data << 4) & 0xF0);
-	  
-	  // 	LCD_PRT |= (1 << LCD_EN);   // Enable LCD
-	  SET_E();
-	  _delay_us(5);               // Minimum delay of 450ns
-	  // 	LCD_PRT &=~ (1 << LCD_EN);  // Disable LCD
-	  CLEAR_E();
-	  _delay_us(DELAY);             // Delay for data write
-  }
-  
-void lcdCommand(unsigned char cmnd)
-{
-	LCD_PRT = (LCD_PRT & 0x0F) | (cmnd & 0xF0);
-    LCD_PRT &=~ (1<<LCD_RS);
-	LCD_PRT &=~ (1<<LCD_RW);
-	LCD_PRT |= (1<<LCD_EN);
-	_delay_us(800);                                 // Time Delay - 25 micro Second
-	LCD_PRT &=~ (1<<LCD_EN);
-	_delay_us(240);                                 // Time Delay - 25 micro Second
-	
-	LCD_PRT = (LCD_PRT & 0x0F) | (cmnd << 4);
-	LCD_PRT |= (1<<LCD_EN);
-	_delay_us(240);                                 // Time Delay - 25 micro Second
-	LCD_PRT &=~ (1<<LCD_EN);
-}
-
-void lcdData(unsigned char data)
-{
-	LCD_PRT = (LCD_PRT & 0x0F) | (data & 0xF0);
-	LCD_PRT |= (1<<LCD_RS);
-	LCD_PRT &=~ (1<<LCD_RW);
-	LCD_PRT |= (1<<LCD_EN);
-	_delay_us(800);                                // Time Delay - 25 micro Second
-	LCD_PRT &=~ (1<<LCD_EN);
-	LCD_PRT = (LCD_PRT & 0x0F) | (data <<4);
-	LCD_PRT |= (1<<LCD_EN);
-	_delay_us(240);                                // Time Delay - 25 micro Second
-	LCD_PRT &=~ (1<<LCD_EN);
-}
-
-void lcd_init()
-{
-	LCD_DDR = 0xFF;
-	
-	LCD_PRT &=~ (1<<LCD_EN);
-	_delay_ms(20);                            // Time Delay -  2 milli Second
-	
-	lcdCommand(0x33); _delay_ms(10);          // Time Delay - 100 micro Second
-	lcdCommand(0x32); _delay_ms(10);          // Time Delay - 100 micro Second
-	lcdCommand(0x28); _delay_ms(10);          // Time Delay - 100 micro Second
-	lcdCommand(0x0c); _delay_ms(10);          // Time Delay - 100 micro Second
-	lcdCommand(0x01); _delay_ms(20);         // Time Delay - 2 milli Second
-	lcdCommand(0x06); _delay_ms(10);	       // Time Delay - 100 micro Second
-}
-
-void LCDByte(uint8_t c, uint8_t isdata)
-{
-	
-	uint8_t hn,ln;			//Nibbles
-	uint8_t temp;
-	
-	hn=c>>4;
-	ln=(c & 0x0F);
-	
-	if(isdata==0)
-	CLEAR_RS();
-	else
-	SET_RS();
-	
-	_delay_us(1);
-	
-	LCD_PRT = (LCD_PRT & 0x0F) | (c & 0xF0);
-
-	CLEAR_RW();
-	SET_E();
-	_delay_us(5);
-	
-	CLEAR_E();
-	_delay_us(DELAY);
-	
-	// Send lower nibble of command
-	LCD_PRT = (LCD_PRT & 0x0F) | ((c << 4) & 0xF0);
-	SET_E();
-	_delay_us(5);
-	CLEAR_E();
-	_delay_us(DELAY);
-}
-
-void lcd_busy()
-{
-	uint8_t busy,status=0x00,temp;
-	
-	
-	
-	LCD_DDR = 0x00;         // Set data direction of LCD port as input
-	// 	LCD_PRT &=~ (1 << LCD_RS);  // RS low for command mode
-	CLEAR_RS();
-	LCD_PRT |= (1 << LCD_RW);   // RW high for read mode
-	// 	LCD_PRT &=~ (1 << LCD_EN);  // Enable LCD
-	CLEAR_E();
-	_delay_us(5);               // Minimum delay of 450ns
-
-	// 	LCD_PRT |= (1 << LCD_EN);   // Enable pulse
-	SET_E();
-	_delay_us(5);               // Minimum delay of 450ns
-	lcd_status = (LCD_PIN & (1 << LCD_D7)); // Read busy flag
-	// 	LCD_PRT &=~ (1 << LCD_EN);  // Disable LCD
-	CLEAR_E();
-	_delay_us(5);               // Minimum delay of 450ns
-
-	LCD_DDR = 0xFF;          // Restore data direction of LCD port as output
-}
-
-*/
+ 
